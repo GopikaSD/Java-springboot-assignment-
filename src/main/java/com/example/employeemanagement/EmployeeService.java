@@ -2,6 +2,7 @@ package com.example.employeemanagement;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class EmployeeService {
@@ -11,6 +12,12 @@ public class EmployeeService {
 
     @Value("${app.company}")
     private String company;
+
+    private final EmployeeRepository employeeRepository;
+
+    public EmployeeService(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
 
     public String getMessage() {
         return message;
@@ -22,5 +29,25 @@ public class EmployeeService {
 
     public String greet(String name) {
         return "Hello " + name + "! Welcome to " + company;
+    }
+
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
+    }
+
+    public Employee getEmployeeById(Long id) {
+        return employeeRepository.findAll()
+                .stream()
+                .filter(employee -> employee.id().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<Employee> getEmployeesByDepartment(String department) {
+        return employeeRepository.findByDepartment(department);
+    }
+
+    public List<Employee> searchEmployeesByName(String name) {
+        return employeeRepository.searchByName(name);
     }
 }

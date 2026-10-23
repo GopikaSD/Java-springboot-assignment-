@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -46,12 +49,50 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public List<Employee> getAllEmployees() {
-        return employeeService.getAllEmployees();
+    public List<Employee> getAllEmployees(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "lastName,asc") String sort) {
+
+        if (page < 0 || size <= 0) {
+            return List.of();
+        }
+
+        List<Employee> employees =
+                new ArrayList<>(employeeService.getAllEmployees());
+
+        String[] sortParts = sort.split(",");
+        String sortField = sortParts[0];
+        boolean descending = sortParts.length > 1
+                && sortParts[1].equalsIgnoreCase("desc");
+
+        if (sortField.equalsIgnoreCase("lastName")) {
+            Comparator<Employee> comparator =
+                    Comparator.comparing(Employee::lastName);
+
+            if (descending) {
+                comparator = comparator.reversed();
+            }
+
+            employees.sort(comparator);
+        }
+
+        long startLong = (long) page * size;
+
+        if (startLong >= employees.size()) {
+            return List.of();
+        }
+
+        int start = (int) startLong;
+        int end = (int) Math.min(startLong + size, employees.size());
+
+        return employees.subList(start, end);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+    public ResponseEntity<Employee> getEmployeeById(
+            @PathVariable Long id) {
+
         Employee employee = employeeService.getEmployeeById(id);
 
         if (employee == null) {
@@ -64,11 +105,14 @@ public class EmployeeController {
     @GetMapping("/department")
     public List<Employee> getEmployeesByDepartment(
             @RequestParam String department) {
+
         return employeeService.getEmployeesByDepartment(department);
     }
 
     @GetMapping("/search")
-    public List<Employee> searchEmployees(@RequestParam String name) {
+    public List<Employee> searchEmployees(
+            @RequestParam String name) {
+
         return employeeService.searchEmployeesByName(name);
     }
 }

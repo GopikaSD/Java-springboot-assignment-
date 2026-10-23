@@ -9,6 +9,17 @@
   "item": [
     {
       "name": "Test Invalid Employee Id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Invalid employee returns 404\", function () {\r\n    pm.expect(pm.response.code).to.eql(404);\r\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
@@ -31,11 +42,22 @@
     },
     {
       "name": "Get All Employees",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"First page returns employees\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\");\r\n    pm.expect(data.length).to.be.above(0);\r\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8080/api/v1/employees",
+          "raw": "http://localhost:8080/api/v1/employees?page=0&size=10&sort=lastName,asc",
           "protocol": "http",
           "host": [
             "localhost"
@@ -45,6 +67,66 @@
             "api",
             "v1",
             "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Employees Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"Out-of-range page returns empty array\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\").that.is.empty;\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees?page=100&size=10&sort=lastName,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "100"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,asc"
+            }
           ]
         }
       },
@@ -52,6 +134,17 @@
     },
     {
       "name": "Get Employee by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Employee has required fields\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.have.property(\"id\");\r\n    pm.expect(data).to.have.property(\"firstName\");\r\n    pm.expect(data).to.have.property(\"lastName\");\r\n    pm.expect(data).to.have.property(\"email\");\r\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
@@ -74,6 +167,17 @@
     },
     {
       "name": "Filtered by Department",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"All employees belong to IT department\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.length).to.be.above(0);\r\n    data.forEach(function (employee) {\r\n        pm.expect(employee.department).to.eql(\"IT\");\r\n    });\r\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
@@ -101,7 +205,57 @@
       "response": []
     },
     {
+      "name": "Filtered by Department Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Engineering department returns empty array\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(pm.response.code).to.eql(200);\r\n    pm.expect(data).to.be.an(\"array\").that.is.empty;\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/department?department=Engineering",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "department"
+          ],
+          "query": [
+            {
+              "key": "department",
+              "value": "Engineering"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Search Employee",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"Search returns matching employee\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.length).to.be.above(0);\r\n    data.forEach(function (employee) {\r\n        pm.expect(\r\n            (employee.firstName + \" \" + employee.lastName).toLowerCase()\r\n        ).to.include(\"gop\");\r\n    });\r\n});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],

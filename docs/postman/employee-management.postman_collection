@@ -1,0 +1,132 @@
+{
+  "info": {
+    "_postman_id": "cbb8f1c9-b7a4-40b5-a701-1f05330e556b",
+    "name": "Employee Management API Test",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59077542",
+    "_collection_link": "https://go.postman.co/collection/59077542-cbb8f1c9-b7a4-40b5-a701-1f05330e556b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Test Invalid Employee Id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/99",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "99"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Employees",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employee by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filtered by Department",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/department?department=IT",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "department"
+          ],
+          "query": [
+            {
+              "key": "department",
+              "value": "IT"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employee",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/search?name=gop",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "gop"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

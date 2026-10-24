@@ -2,6 +2,7 @@ package com.example.employeemanagement;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -36,11 +37,7 @@ public class EmployeeService {
     }
 
     public Employee getEmployeeById(Long id) {
-        return employeeRepository.findAll()
-                .stream()
-                .filter(employee -> employee.id().equals(id))
-                .findFirst()
-                .orElse(null);
+        return employeeRepository.findById(id);
     }
 
     public List<Employee> getEmployeesByDepartment(String department) {
@@ -49,5 +46,21 @@ public class EmployeeService {
 
     public List<Employee> searchEmployeesByName(String name) {
         return employeeRepository.searchByName(name);
+    }
+
+    public boolean existsByEmail(String email) {
+        return employeeRepository.existsByEmail(email);
+    }
+
+    public Employee createEmployee(Employee employee) {
+        return employeeRepository.save(employee);
+    }
+
+    public void updateEmployee(Employee employee) {
+        employeeRepository.update(employee);
+    }
+
+    public boolean deleteEmployee(Long id) {
+        return employeeRepository.deleteById(id);
     }
 }

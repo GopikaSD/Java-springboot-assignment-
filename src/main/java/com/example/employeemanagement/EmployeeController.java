@@ -2,15 +2,12 @@ package com.example.employeemanagement;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/employees")
@@ -24,13 +21,8 @@ public class EmployeeController {
 
     @GetMapping("/sample")
     public Employee getSampleEmployee() {
-        return new Employee(
-                1L,
-                "Gopika",
-                "S",
-                "gopika@example.com",
-                "IT"
-        );
+        return new Employee(1L, "Gopika", "S",
+                "gopika@example.com", "IT");
     }
 
     @GetMapping("/message")
@@ -96,7 +88,7 @@ public class EmployeeController {
         Employee employee = employeeService.getEmployeeById(id);
 
         if (employee == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok(employee);
@@ -105,14 +97,119 @@ public class EmployeeController {
     @GetMapping("/department")
     public List<Employee> getEmployeesByDepartment(
             @RequestParam String department) {
-
         return employeeService.getEmployeesByDepartment(department);
     }
 
     @GetMapping("/search")
-    public List<Employee> searchEmployees(
-            @RequestParam String name) {
-
+    public List<Employee> searchEmployees(@RequestParam String name) {
         return employeeService.searchEmployeesByName(name);
+    }
+
+    // Day 4: Create employee
+    @PostMapping
+    public ResponseEntity<?> createEmployee(@RequestBody Employee employee) {
+
+        if (employeeService.existsByEmail(employee.email())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Email already exists");
+        }
+
+        Employee created = employeeService.createEmployee(employee);
+
+        return ResponseEntity
+                .created(java.net.URI.create(
+                        "/api/v1/employees/" + created.id()))
+                .body(created);
+    }
+
+    // Day 4: Replace employee details
+    @PutMapping("/{id}")
+    public ResponseEntity<?> replaceEmployee(
+            @PathVariable Long id,
+            @RequestBody Employee employee) {
+
+        Employee existing = employeeService.getEmployeeById(id);
+
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (!existing.email().equalsIgnoreCase(employee.email())
+                && employeeService.existsByEmail(employee.email())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Email already exists");
+        }
+
+        Employee updated = new Employee(
+                id,
+                employee.firstName(),
+                employee.lastName(),
+                employee.email(),
+                employee.department()
+        );
+
+        employeeService.updateEmployee(updated);
+
+        return ResponseEntity.ok(updated);
+    }
+
+    // Day 4: Update selected fields
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patchEmployee(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> changes) {
+
+        Employee existing = employeeService.getEmployeeById(id);
+
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String firstName = existing.firstName();
+        String lastName = existing.lastName();
+        String email = existing.email();
+        String department = existing.department();
+
+        if (changes.containsKey("firstName")) {
+            firstName = String.valueOf(changes.get("firstName"));
+        }
+
+        if (changes.containsKey("lastName")) {
+            lastName = String.valueOf(changes.get("lastName"));
+        }
+
+        if (changes.containsKey("email")) {
+            email = String.valueOf(changes.get("email"));
+
+            if (!existing.email().equalsIgnoreCase(email)
+                    && employeeService.existsByEmail(email)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Email already exists");
+            }
+        }
+
+        if (changes.containsKey("department")) {
+            department = String.valueOf(changes.get("department"));
+        }
+
+        Employee updated = new Employee(
+                id, firstName, lastName, email, department);
+
+        employeeService.updateEmployee(updated);
+
+        return ResponseEntity.ok(updated);
+    }
+
+    // Day 4: Delete employee
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+
+        boolean deleted = employeeService.deleteEmployee(id);
+
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.noContent().build();
     }
 }

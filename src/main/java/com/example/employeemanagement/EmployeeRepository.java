@@ -19,6 +19,13 @@ public class EmployeeRepository {
         return employees;
     }
 
+    public Employee findById(Long id) {
+        return employees.stream()
+                .filter(employee -> employee.id().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
     public List<Employee> findByDepartment(String department) {
         return employees.stream()
                 .filter(employee -> employee.department()
@@ -34,5 +41,30 @@ public class EmployeeRepository {
                         || employee.lastName().toLowerCase()
                                 .contains(name.toLowerCase()))
                 .toList();
+    }
+
+    public boolean existsByEmail(String email) {
+        return employees.stream()
+                .anyMatch(employee ->
+                        employee.email().equalsIgnoreCase(email));
+    }
+
+    public Employee save(Employee employee) {
+        employees.add(employee);
+        return employee;
+    }
+
+    public void update(Employee updatedEmployee) {
+        for (int i = 0; i < employees.size(); i++) {
+            if (employees.get(i).id().equals(updatedEmployee.id())) {
+                employees.set(i, updatedEmployee);
+                return;
+            }
+        }
+    }
+
+    public boolean deleteById(Long id) {
+        return employees.removeIf(employee ->
+                employee.id().equals(id));
     }
 }

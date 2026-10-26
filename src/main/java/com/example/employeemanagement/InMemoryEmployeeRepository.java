@@ -3,6 +3,8 @@ package com.example.employeemanagement;
 
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +14,23 @@ public class InMemoryEmployeeRepository implements EmployeeRepository {
     private final List<Employee> employees = new ArrayList<>();
 
     public InMemoryEmployeeRepository() {
-        employees.add(new Employee(1L, "Gopika", "S", "gopika@example.com", "IT"));
-        employees.add(new Employee(2L, "Arun", "K", "arun@example.com", "HR"));
-        employees.add(new Employee(3L, "Priya", "R", "priya@example.com", "IT"));
+        employees.add(new Employee(
+                1L, "Gopika", "S", "gopika@example.com", "IT",
+                "9876543210", LocalDate.of(2025, 6, 1),
+                new BigDecimal("25000"), "EMP-1234"
+        ));
+
+        employees.add(new Employee(
+                2L, "Arun", "K", "arun@example.com", "HR",
+                "9876543211", LocalDate.of(2025, 7, 15),
+                new BigDecimal("30000"), "EMP-1235"
+        ));
+
+        employees.add(new Employee(
+                3L, "Priya", "R", "priya@example.com", "IT",
+                "9876543212", LocalDate.of(2025, 8, 10),
+                new BigDecimal("28000"), "EMP-1236"
+        ));
     }
 
     @Override

@@ -1,8 +1,11 @@
 
 package com.example.employeemanagement;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -10,6 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/employees")
 public class EmployeeController {
 
@@ -83,7 +87,7 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeResponse> getEmployeeById(
-            @PathVariable Long id) {
+            @PathVariable @Positive(message = "Employee ID must be positive") Long id) {
 
         EmployeeResponse employee = employeeService.getEmployeeById(id);
 
@@ -108,7 +112,7 @@ public class EmployeeController {
 
     @PostMapping
     public ResponseEntity<?> createEmployee(
-            @RequestBody EmployeeRequest request) {
+            @Valid @RequestBody EmployeeRequest request) {
 
         try {
             EmployeeResponse created =
@@ -126,8 +130,8 @@ public class EmployeeController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> replaceEmployee(
-            @PathVariable Long id,
-            @RequestBody UpdateEmployeeRequest request) {
+            @PathVariable @Positive(message = "Employee ID must be positive") Long id,
+            @Valid @RequestBody UpdateEmployeeRequest request) {
 
         try {
             EmployeeResponse updated =
@@ -147,14 +151,15 @@ public class EmployeeController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> patchEmployee(
-            @PathVariable Long id,
-            @RequestBody UpdateEmployeeRequest request) {
+            @PathVariable @Positive(message = "Employee ID must be positive") Long id,
+            @Valid @RequestBody UpdateEmployeeRequest request) {
 
         return replaceEmployee(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteEmployee(
+            @PathVariable @Positive(message = "Employee ID must be positive") Long id) {
 
         boolean deleted = employeeService.deleteEmployee(id);
 

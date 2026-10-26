@@ -99,7 +99,11 @@ public class EmployeeService {
                 request.firstName(),
                 request.lastName(),
                 request.email(),
-                request.department()
+                request.department(),
+                request.phone(),
+                request.joiningDate(),
+                request.salary(),
+                request.employeeCode()
         );
 
         employeeRepository.update(updated);

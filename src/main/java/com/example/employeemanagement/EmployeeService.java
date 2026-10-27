@@ -45,10 +45,17 @@ public class EmployeeService {
 
     public EmployeeResponse getEmployeeById(Long id) {
         Employee employee = employeeRepository.findById(id);
-        return employee == null ? null : employeeMapper.toResponse(employee);
+
+        if (employee == null) {
+            throw new EmployeeNotFoundException(
+                    "Employee not found with ID: " + id);
+        }
+
+        return employeeMapper.toResponse(employee);
     }
 
-    public List<EmployeeResponse> getEmployeesByDepartment(String department) {
+    public List<EmployeeResponse> getEmployeesByDepartment(
+            String department) {
         return employeeRepository.findByDepartment(department).stream()
                 .map(employeeMapper::toResponse)
                 .toList();
@@ -66,7 +73,7 @@ public class EmployeeService {
 
     public EmployeeResponse createEmployee(EmployeeRequest request) {
         if (existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new DuplicateEmailException("Email already exists");
         }
 
         long nextId = employeeRepository.findAll().stream()
@@ -86,12 +93,13 @@ public class EmployeeService {
         Employee existing = employeeRepository.findById(id);
 
         if (existing == null) {
-            return null;
+            throw new EmployeeNotFoundException(
+                    "Employee not found with ID: " + id);
         }
 
         if (!existing.email().equalsIgnoreCase(request.email())
                 && existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new DuplicateEmailException("Email already exists");
         }
 
         Employee updated = new Employee(
@@ -111,6 +119,13 @@ public class EmployeeService {
     }
 
     public boolean deleteEmployee(Long id) {
-        return employeeRepository.deleteById(id);
+        boolean deleted = employeeRepository.deleteById(id);
+
+        if (!deleted) {
+            throw new EmployeeNotFoundException(
+                    "Employee not found with ID: " + id);
+        }
+
+        return true;
     }
 }

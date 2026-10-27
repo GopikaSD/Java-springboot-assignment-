@@ -3,7 +3,6 @@ package com.example.employeemanagement;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,26 +49,30 @@ public class EmployeeController {
             @RequestParam(defaultValue = "lastName,asc") String sort) {
 
         if (page < 0 || size <= 0) {
-            return List.of();
+            throw new InvalidOperationException(
+                    "Page must be zero or greater and size must be positive");
         }
 
         List<EmployeeResponse> employees =
-                employeeService.getAllEmployees().stream()
-                        .sorted(Comparator.comparing(
-                                EmployeeResponse::lastName,
-                                String.CASE_INSENSITIVE_ORDER))
-                        .toList();
+                employeeService.getAllEmployees();
 
         String[] sortParts = sort.split(",");
         String sortField = sortParts[0];
+        boolean descending = sortParts.length > 1
+                && sortParts[1].equalsIgnoreCase("desc");
 
-        if (sortField.equalsIgnoreCase("lastName")
-                && sortParts.length > 1
-                && sortParts[1].equalsIgnoreCase("desc")) {
-            employees = employees.stream()
-                    .sorted(Comparator.comparing(
+        if (sortField.equalsIgnoreCase("lastName")) {
+            Comparator<EmployeeResponse> comparator =
+                    Comparator.comparing(
                             EmployeeResponse::lastName,
-                            String.CASE_INSENSITIVE_ORDER.reversed()))
+                            String.CASE_INSENSITIVE_ORDER);
+
+            if (descending) {
+                comparator = comparator.reversed();
+            }
+
+            employees = employees.stream()
+                    .sorted(comparator)
                     .toList();
         }
 
@@ -87,14 +90,11 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeResponse> getEmployeeById(
-            @PathVariable @Positive(message = "Employee ID must be positive") Long id) {
+            @PathVariable
+            @Positive(message = "Employee ID must be positive")
+            Long id) {
 
         EmployeeResponse employee = employeeService.getEmployeeById(id);
-
-        if (employee == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         return ResponseEntity.ok(employee);
     }
 
@@ -111,47 +111,35 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createEmployee(
+    public ResponseEntity<EmployeeResponse> createEmployee(
             @Valid @RequestBody EmployeeRequest request) {
 
-        try {
-            EmployeeResponse created =
-                    employeeService.createEmployee(request);
+        EmployeeResponse created =
+                employeeService.createEmployee(request);
 
-            return ResponseEntity
-                    .created(URI.create("/api/v1/employees/" + created.id()))
-                    .body(created);
-
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(exception.getMessage());
-        }
+        return ResponseEntity
+                .created(URI.create("/api/v1/employees/" + created.id()))
+                .body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> replaceEmployee(
-            @PathVariable @Positive(message = "Employee ID must be positive") Long id,
+    public ResponseEntity<EmployeeResponse> replaceEmployee(
+            @PathVariable
+            @Positive(message = "Employee ID must be positive")
+            Long id,
             @Valid @RequestBody UpdateEmployeeRequest request) {
 
-        try {
-            EmployeeResponse updated =
-                    employeeService.updateEmployee(id, request);
+        EmployeeResponse updated =
+                employeeService.updateEmployee(id, request);
 
-            if (updated == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            return ResponseEntity.ok(updated);
-
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(exception.getMessage());
-        }
+        return ResponseEntity.ok(updated);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> patchEmployee(
-            @PathVariable @Positive(message = "Employee ID must be positive") Long id,
+    public ResponseEntity<EmployeeResponse> patchEmployee(
+            @PathVariable
+            @Positive(message = "Employee ID must be positive")
+            Long id,
             @Valid @RequestBody UpdateEmployeeRequest request) {
 
         return replaceEmployee(id, request);
@@ -159,14 +147,11 @@ public class EmployeeController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(
-            @PathVariable @Positive(message = "Employee ID must be positive") Long id) {
+            @PathVariable
+            @Positive(message = "Employee ID must be positive")
+            Long id) {
 
-        boolean deleted = employeeService.deleteEmployee(id);
-
-        if (!deleted) {
-            return ResponseEntity.notFound().build();
-        }
-
+        employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,6 +1,8 @@
 
 package com.example.employeemanagement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +10,9 @@ import java.util.List;
 
 @Service
 public class EmployeeService {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(EmployeeService.class);
 
     @Value("${app.message}")
     private String message;
@@ -84,6 +89,10 @@ public class EmployeeService {
         Employee employee = employeeMapper.toEntity(request, nextId);
         Employee saved = employeeRepository.save(employee);
 
+        logger.info(
+                "Employee created successfully with ID: {}",
+                saved.id());
+
         return employeeMapper.toResponse(saved);
     }
 
@@ -115,6 +124,11 @@ public class EmployeeService {
         );
 
         employeeRepository.update(updated);
+
+        logger.info(
+                "Employee updated successfully with ID: {}",
+                id);
+
         return employeeMapper.toResponse(updated);
     }
 
@@ -125,6 +139,10 @@ public class EmployeeService {
             throw new EmployeeNotFoundException(
                     "Employee not found with ID: " + id);
         }
+
+        logger.info(
+                "Employee deleted successfully with ID: {}",
+                id);
 
         return true;
     }

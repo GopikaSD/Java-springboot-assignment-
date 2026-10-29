@@ -43,55 +43,58 @@ public class EmployeeService {
     }
 
     public List<EmployeeResponse> getAllEmployees() {
-        return employeeRepository.findAll().stream()
+        return employeeRepository.findAll()
+                .stream()
                 .map(employeeMapper::toResponse)
                 .toList();
     }
 
     public EmployeeResponse getEmployeeById(Long id) {
-        Employee employee = employeeRepository.findById(id);
-
-        if (employee == null) {
-            throw new EmployeeNotFoundException(
-                    "Employee not found with ID: " + id);
-        }
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(
+                        "Employee not found with ID: " + id));
 
         return employeeMapper.toResponse(employee);
     }
 
     public List<EmployeeResponse> getEmployeesByDepartment(
             String department) {
-        return employeeRepository.findByDepartment(department).stream()
+        return employeeRepository
+                .findByDepartmentIgnoreCase(department)
+                .stream()
                 .map(employeeMapper::toResponse)
                 .toList();
     }
 
     public List<EmployeeResponse> searchEmployeesByName(String name) {
-        return employeeRepository.searchByName(name).stream()
+        return employeeRepository
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                        name, name)
+                .stream()
                 .map(employeeMapper::toResponse)
                 .toList();
     }
 
     public boolean existsByEmail(String email) {
-        return employeeRepository.existsByEmail(email);
+        return employeeRepository.existsByEmailIgnoreCase(email);
     }
 
     public EmployeeResponse createEmployee(EmployeeRequest request) {
-        if (existsByEmail(request.email())) {
+        if (employeeRepository.existsByEmailIgnoreCase(request.email())) {
             throw new DuplicateEmailException("Email already exists");
         }
 
-        long nextId = employeeRepository.findAll().stream()
-                .mapToLong(Employee::id)
-                .max()
-                .orElse(0L) + 1;
+        if (employeeRepository
+                .existsByEmployeeCodeIgnoreCase(request.employeeCode())) {
+            throw new InvalidOperationException(
+                    "Employee code already exists");
+        }
 
-        Employee employee = employeeMapper.toEntity(request, nextId);
+        // Database automatically generates the employee ID.
+        Employee employee = employeeMapper.toEntity(request, null);
         Employee saved = employeeRepository.save(employee);
 
-        logger.info(
-                "Employee created successfully with ID: {}",
-                saved.id());
+        logger.info("Employee created successfully with ID: {}", saved.id());
 
         return employeeMapper.toResponse(saved);
     }
@@ -99,20 +102,24 @@ public class EmployeeService {
     public EmployeeResponse updateEmployee(
             Long id, UpdateEmployeeRequest request) {
 
-        Employee existing = employeeRepository.findById(id);
-
-        if (existing == null) {
-            throw new EmployeeNotFoundException(
-                    "Employee not found with ID: " + id);
-        }
+        Employee existing = employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(
+                        "Employee not found with ID: " + id));
 
         if (!existing.email().equalsIgnoreCase(request.email())
-                && existsByEmail(request.email())) {
+                && employeeRepository.existsByEmailIgnoreCase(request.email())) {
             throw new DuplicateEmailException("Email already exists");
         }
 
+        if (!existing.employeeCode().equalsIgnoreCase(request.employeeCode())
+                && employeeRepository.existsByEmployeeCodeIgnoreCase(
+                        request.employeeCode())) {
+            throw new InvalidOperationException(
+                    "Employee code already exists");
+        }
+
         Employee updated = new Employee(
-                id,
+                existing.id(),
                 request.firstName(),
                 request.lastName(),
                 request.email(),
@@ -123,26 +130,22 @@ public class EmployeeService {
                 request.employeeCode()
         );
 
-        employeeRepository.update(updated);
+        Employee saved = employeeRepository.save(updated);
 
-        logger.info(
-                "Employee updated successfully with ID: {}",
-                id);
+        logger.info("Employee updated successfully with ID: {}", id);
 
-        return employeeMapper.toResponse(updated);
+        return employeeMapper.toResponse(saved);
     }
 
     public boolean deleteEmployee(Long id) {
-        boolean deleted = employeeRepository.deleteById(id);
-
-        if (!deleted) {
+        if (!employeeRepository.existsById(id)) {
             throw new EmployeeNotFoundException(
                     "Employee not found with ID: " + id);
         }
 
-        logger.info(
-                "Employee deleted successfully with ID: {}",
-                id);
+        employeeRepository.deleteById(id);
+
+        logger.info("Employee deleted successfully with ID: {}", id);
 
         return true;
     }

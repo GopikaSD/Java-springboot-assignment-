@@ -1,23 +1,19 @@
 
 package com.example.employeemanagement;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
-public interface EmployeeRepository {
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    List<Employee> findAll();
+    List<Employee> findByDepartmentIgnoreCase(String department);
 
-    Employee findById(Long id);
+    boolean existsByEmailIgnoreCase(String email);
 
-    List<Employee> findByDepartment(String department);
+    boolean existsByEmployeeCodeIgnoreCase(String employeeCode);
 
-    List<Employee> searchByName(String name);
-
-    boolean existsByEmail(String email);
-
-    Employee save(Employee employee);
-
-    void update(Employee employee);
-
-    boolean deleteById(Long id);
+    List<Employee> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+            String firstName,
+            String lastName
+    );
 }

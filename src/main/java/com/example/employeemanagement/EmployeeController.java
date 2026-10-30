@@ -3,14 +3,16 @@ package com.example.employeemanagement;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 @RestController
 @Validated
@@ -18,9 +20,16 @@ import java.util.Locale;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final EmployeeRepository employeeRepository;
+    private final EmployeeMapper employeeMapper;
 
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(
+            EmployeeService employeeService,
+            EmployeeRepository employeeRepository,
+            EmployeeMapper employeeMapper) {
         this.employeeService = employeeService;
+        this.employeeRepository = employeeRepository;
+        this.employeeMapper = employeeMapper;
     }
 
     @GetMapping("/sample")
@@ -43,22 +52,17 @@ public class EmployeeController {
         return employeeService.greet(name);
     }
 
-    // Task 8.1: Pagination and sorting
+    // Get all employees using database pagination
     @GetMapping
     public PageResponse<EmployeeResponse> getAllEmployees(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "lastName,asc") String sort) {
 
-        validatePageAndSize(page, size);
-
-        List<EmployeeResponse> employees =
-                employeeService.getAllEmployees();
-
-        return createPage(employees, page, size, sort);
+        return employeeService.getAllEmployees(page, size, sort);
     }
 
-    // Task 8.2: Search by name and optional department
+    // Search employees using database pagination
     @GetMapping("/search")
     public PageResponse<EmployeeResponse> searchEmployees(
             @RequestParam(defaultValue = "") String name,
@@ -67,40 +71,6 @@ public class EmployeeController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "lastName,asc") String sort) {
 
-        validatePageAndSize(page, size);
-
-        String searchName = name.trim().toLowerCase(Locale.ROOT);
-
-        String searchDepartment = department == null
-                ? null
-                : department.trim().toLowerCase(Locale.ROOT);
-
-        List<EmployeeResponse> filtered =
-                employeeService.getAllEmployees()
-                        .stream()
-                        .filter(employee ->
-                                searchName.isEmpty()
-                                || (employee.firstName() != null
-                                && employee.firstName()
-                                        .toLowerCase(Locale.ROOT)
-                                        .contains(searchName))
-                                || (employee.lastName() != null
-                                && employee.lastName()
-                                        .toLowerCase(Locale.ROOT)
-                                        .contains(searchName)))
-                        .filter(employee ->
-                                searchDepartment == null
-                                || searchDepartment.isEmpty()
-                                || (employee.department() != null
-                                && employee.department()
-                                        .toLowerCase(Locale.ROOT)
-                                        .equals(searchDepartment)))
-                        .toList();
-
-        return createPage(filtered, page, size, sort);
-    }
-
-    private void validatePageAndSize(int page, int size) {
         if (page < 0) {
             throw new InvalidOperationException(
                     "Page must be zero or greater");
@@ -110,72 +80,87 @@ public class EmployeeController {
             throw new InvalidOperationException(
                     "Size must be between 1 and 100");
         }
-    }
-
-    private PageResponse<EmployeeResponse> createPage(
-            List<EmployeeResponse> employees,
-            int page,
-            int size,
-            String sort) {
 
         String[] sortParts = sort.split(",");
 
-        String sortField = sortParts[0].trim();
-
-        if (sortParts.length > 2
-                || !sortField.equalsIgnoreCase("lastName")) {
+        if (sortParts.length != 2
+                || !sortParts[0].trim().equalsIgnoreCase("lastName")) {
             throw new InvalidOperationException(
-                    "Supported sort field: lastName");
+                    "Sort must be lastName,asc or lastName,desc");
         }
 
-        String direction = sortParts.length == 2
-                ? sortParts[1].trim()
-                : "asc";
+        Sort.Direction direction;
 
-        if (!direction.equalsIgnoreCase("asc")
-                && !direction.equalsIgnoreCase("desc")) {
+        try {
+            direction = Sort.Direction.fromString(
+                    sortParts[1].trim());
+        } catch (IllegalArgumentException exception) {
             throw new InvalidOperationException(
                     "Sort direction must be asc or desc");
         }
 
-        Comparator<EmployeeResponse> comparator =
-                Comparator.comparing(
-                        EmployeeResponse::lastName,
-                        Comparator.nullsLast(
-                                String.CASE_INSENSITIVE_ORDER));
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(direction, "lastName")
+        );
 
-        if (direction.equalsIgnoreCase("desc")) {
-            comparator = comparator.reversed();
-        }
+        String searchName = name == null ? "" : name.trim();
+        String selectedDepartment =
+                department == null ? "" : department.trim();
 
-        List<EmployeeResponse> sorted = employees.stream()
-                .sorted(comparator)
-                .toList();
+        Page<Employee> employeePage;
 
-        long totalElements = sorted.size();
-
-        int totalPages = totalElements == 0
-                ? 0
-                : (int) Math.ceil((double) totalElements / size);
-
-        long startLong = (long) page * size;
-
-        List<EmployeeResponse> content;
-
-        if (startLong >= totalElements) {
-            content = List.of();
+        if (!searchName.isEmpty() && !selectedDepartment.isEmpty()) {
+            // Search by name first, then filter by department in database
+            employeePage = employeeRepository
+                    .findByDepartmentIgnoreCaseAndFirstNameContainingIgnoreCaseOrDepartmentIgnoreCaseAndLastNameContainingIgnoreCase(
+                            selectedDepartment,
+                            searchName,
+                            selectedDepartment,
+                            searchName,
+                            pageable
+                    );
+        } else if (!selectedDepartment.isEmpty()) {
+            employeePage = employeeRepository.findByDepartmentIgnoreCase(
+                    selectedDepartment,
+                    pageable
+            );
         } else {
-            int start = (int) startLong;
-            int end = (int) Math.min(startLong + size, totalElements);
-            content = sorted.subList(start, end);
+            employeePage = employeeService.searchEmployeesByName(
+                    searchName,
+                    pageable
+            ).content().isEmpty()
+                    ? Page.empty(pageable)
+                    : null;
+
+            // Fetch the page directly so total counts remain accurate,
+            // including when a requested page has no matching content.
+            if (searchName.isEmpty()) {
+                employeePage = employeeRepository.findAll(pageable);
+            } else {
+                employeePage =
+                        employeeRepository
+                                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                                        searchName,
+                                        searchName,
+                                        pageable
+                                );
+            }
         }
+
+        List<EmployeeResponse> content = employeePage.getContent()
+                .stream()
+                .map(employeeMapper::toResponse)
+                .toList();
 
         return new PageResponse<>(
                 content,
-                page,
-                size,
-                totalElements,
-                totalPages);
+                employeePage.getNumber(),
+                employeePage.getSize(),
+                employeePage.getTotalElements(),
+                employeePage.getTotalPages()
+        );
     }
 
     @GetMapping("/{id}")
@@ -184,8 +169,8 @@ public class EmployeeController {
             @Positive(message = "Employee ID must be positive")
             Long id) {
 
-        EmployeeResponse employee = employeeService.getEmployeeById(id);
-        return ResponseEntity.ok(employee);
+        return ResponseEntity.ok(
+                employeeService.getEmployeeById(id));
     }
 
     @GetMapping("/department")
@@ -215,10 +200,8 @@ public class EmployeeController {
             Long id,
             @Valid @RequestBody UpdateEmployeeRequest request) {
 
-        EmployeeResponse updated =
-                employeeService.updateEmployee(id, request);
-
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(
+                employeeService.updateEmployee(id, request));
     }
 
     @PatchMapping("/{id}")

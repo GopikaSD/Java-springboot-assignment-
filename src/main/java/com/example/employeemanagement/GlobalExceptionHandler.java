@@ -48,6 +48,19 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(DuplicateEmployeeCodeException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmployeeCode(
+            DuplicateEmployeeCodeException ex,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                ex.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
     @ExceptionHandler(InvalidOperationException.class)
     public ResponseEntity<ErrorResponse> handleInvalidOperation(
             InvalidOperationException ex,

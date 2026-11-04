@@ -9,19 +9,31 @@ import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    // Find employees by department
-    List<Employee> findByDepartmentIgnoreCase(String department);
+    // Find employees by department name
+    List<Employee> findByDepartment_NameIgnoreCase(String department);
 
-    // Find employees by department with pagination
-    Page<Employee> findByDepartmentIgnoreCase(
+    // Find employees by department name with pagination
+    Page<Employee> findByDepartment_NameIgnoreCase(
             String department,
             Pageable pageable
     );
 
+    // Search employees by department and first name or last name
+    Page<Employee>
+    findByDepartment_NameIgnoreCaseAndFirstNameContainingIgnoreCaseOrDepartment_NameIgnoreCaseAndLastNameContainingIgnoreCase(
+            String department1,
+            String firstName,
+            String department2,
+            String lastName,
+            Pageable pageable
+    );
+
+    // Find employees by department ID
+    List<Employee> findByDepartment_Id(Long departmentId);
+
     // Find employees by last name
     List<Employee> findByLastNameContainingIgnoreCase(String lastName);
 
-    // Find employees by last name with pagination
     Page<Employee> findByLastNameContainingIgnoreCase(
             String lastName,
             Pageable pageable
@@ -30,11 +42,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     // Check duplicate email
     boolean existsByEmail(String email);
 
+    boolean existsByEmailIgnoreCase(String email);
+
     // Check duplicate employee code
     boolean existsByEmployeeCode(String employeeCode);
-
-    // Existing case-insensitive duplicate checks
-    boolean existsByEmailIgnoreCase(String email);
 
     boolean existsByEmployeeCodeIgnoreCase(String employeeCode);
 
@@ -44,18 +55,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             String lastName
     );
 
-    // Search first name or last name with pagination
     Page<Employee> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
             String firstName,
-            String lastName,
-            Pageable pageable
-    );
-
-    // Search by department and first name or department and last name
-    Page<Employee> findByDepartmentIgnoreCaseAndFirstNameContainingIgnoreCaseOrDepartmentIgnoreCaseAndLastNameContainingIgnoreCase(
-            String department1,
-            String firstName,
-            String department2,
             String lastName,
             Pageable pageable
     );

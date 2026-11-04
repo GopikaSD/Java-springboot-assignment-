@@ -15,13 +15,18 @@ import java.util.List;
 public class DataSeeder implements CommandLineRunner {
 
     private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
 
-    public DataSeeder(EmployeeRepository employeeRepository) {
+    public DataSeeder(
+            EmployeeRepository employeeRepository,
+            DepartmentRepository departmentRepository) {
         this.employeeRepository = employeeRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     @Override
     public void run(String... args) {
+
         if (employeeRepository.count() > 0) {
             System.out.println("Employees already exist. Skipping seed data.");
             return;
@@ -43,19 +48,28 @@ public class DataSeeder implements CommandLineRunner {
             "Y", "Z", "Q", "U", "O"
         };
 
-        String[] departments = {
+        String[] departmentNames = {
             "IT", "HR", "Finance", "Marketing", "IT"
         };
+
+        List<Department> departments = new ArrayList<>();
+
+        departments.add(new Department("IT", "Coimbatore"));
+        departments.add(new Department("HR", "Chennai"));
+        departments.add(new Department("Finance", "Bangalore"));
+        departments.add(new Department("Marketing", "Chennai"));
+
+        departmentRepository.saveAll(departments);
 
         List<Employee> employees = new ArrayList<>();
 
         for (int i = 0; i < 25; i++) {
+
             Employee employee = new Employee(
                 null,
                 firstNames[i],
                 lastNames[i],
                 "employee" + (i + 1) + "@example.com",
-                departments[i % departments.length],
                 "900000" + String.format("%04d", i + 1),
                 LocalDate.of(2024, 1, 1).plusDays(i),
                 new BigDecimal("25000.00").add(
@@ -66,10 +80,21 @@ public class DataSeeder implements CommandLineRunner {
                 String.format("EMP-%04d", i + 1)
             );
 
+            String departmentName =
+                departmentNames[i % departmentNames.length];
+
+            Department department = departments.stream()
+                .filter(d -> d.getName().equals(departmentName))
+                .findFirst()
+                .orElseThrow();
+
+            department.addEmployee(employee);
+
             employees.add(employee);
         }
 
         employeeRepository.saveAll(employees);
+
         System.out.println("25 sample employees seeded successfully.");
     }
 }

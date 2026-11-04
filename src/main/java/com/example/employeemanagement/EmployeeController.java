@@ -3,6 +3,7 @@ package com.example.employeemanagement;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ public class EmployeeController {
             EmployeeService employeeService,
             EmployeeRepository employeeRepository,
             EmployeeMapper employeeMapper) {
+
         this.employeeService = employeeService;
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
@@ -62,7 +64,7 @@ public class EmployeeController {
         return employeeService.getAllEmployees(page, size, sort);
     }
 
-    // Search employees using database pagination
+    // Search employees by name and department
     @GetMapping("/search")
     public PageResponse<EmployeeResponse> searchEmployees(
             @RequestParam(defaultValue = "") String name,
@@ -72,12 +74,12 @@ public class EmployeeController {
             @RequestParam(defaultValue = "lastName,asc") String sort) {
 
         if (page < 0) {
-            throw new InvalidOperationException(
+            throw new IllegalArgumentException(
                     "Page must be zero or greater");
         }
 
         if (size < 1 || size > 100) {
-            throw new InvalidOperationException(
+            throw new IllegalArgumentException(
                     "Size must be between 1 and 100");
         }
 
@@ -85,7 +87,7 @@ public class EmployeeController {
 
         if (sortParts.length != 2
                 || !sortParts[0].trim().equalsIgnoreCase("lastName")) {
-            throw new InvalidOperationException(
+            throw new IllegalArgumentException(
                     "Sort must be lastName,asc or lastName,desc");
         }
 
@@ -95,7 +97,7 @@ public class EmployeeController {
             direction = Sort.Direction.fromString(
                     sortParts[1].trim());
         } catch (IllegalArgumentException exception) {
-            throw new InvalidOperationException(
+            throw new IllegalArgumentException(
                     "Sort direction must be asc or desc");
         }
 
@@ -112,41 +114,36 @@ public class EmployeeController {
         Page<Employee> employeePage;
 
         if (!searchName.isEmpty() && !selectedDepartment.isEmpty()) {
-            // Search by name first, then filter by department in database
+
             employeePage = employeeRepository
-                    .findByDepartmentIgnoreCaseAndFirstNameContainingIgnoreCaseOrDepartmentIgnoreCaseAndLastNameContainingIgnoreCase(
+                    .findByDepartment_NameIgnoreCaseAndFirstNameContainingIgnoreCaseOrDepartment_NameIgnoreCaseAndLastNameContainingIgnoreCase(
                             selectedDepartment,
                             searchName,
                             selectedDepartment,
                             searchName,
                             pageable
                     );
-        } else if (!selectedDepartment.isEmpty()) {
-            employeePage = employeeRepository.findByDepartmentIgnoreCase(
-                    selectedDepartment,
-                    pageable
-            );
-        } else {
-            employeePage = employeeService.searchEmployeesByName(
-                    searchName,
-                    pageable
-            ).content().isEmpty()
-                    ? Page.empty(pageable)
-                    : null;
 
-            // Fetch the page directly so total counts remain accurate,
-            // including when a requested page has no matching content.
-            if (searchName.isEmpty()) {
-                employeePage = employeeRepository.findAll(pageable);
-            } else {
-                employeePage =
-                        employeeRepository
-                                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-                                        searchName,
-                                        searchName,
-                                        pageable
-                                );
-            }
+        } else if (!selectedDepartment.isEmpty()) {
+
+            employeePage = employeeRepository
+                    .findByDepartment_NameIgnoreCase(
+                            selectedDepartment,
+                            pageable
+                    );
+
+        } else if (!searchName.isEmpty()) {
+
+            employeePage = employeeRepository
+                    .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                            searchName,
+                            searchName,
+                            pageable
+                    );
+
+        } else {
+
+            employeePage = employeeRepository.findAll(pageable);
         }
 
         List<EmployeeResponse> content = employeePage.getContent()
@@ -222,5 +219,15 @@ public class EmployeeController {
 
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Assign employee to a department
+    @PutMapping("/{id}/department/{deptId}")
+    public ResponseEntity<EmployeeResponse> assignDepartment(
+            @PathVariable Long id,
+            @PathVariable Long deptId) {
+
+        return ResponseEntity.ok(
+                employeeService.assignDepartment(id, deptId));
     }
 }

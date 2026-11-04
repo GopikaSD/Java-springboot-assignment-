@@ -14,6 +14,7 @@ public record EmployeeResponse(
         LocalDate joiningDate,
         BigDecimal salary,
         String employeeCode,
-        String fullName
+        String fullName,
+        AddressResponse address
 ) {
 }

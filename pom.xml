@@ -51,10 +51,17 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- H2 Console Support for Spring Boot 4 -->
+        <!-- H2 Console Support -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-h2console</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL Database Driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Swagger UI and OpenAPI documentation -->

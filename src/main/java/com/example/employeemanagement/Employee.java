@@ -4,11 +4,16 @@ package com.example.employeemanagement;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -28,9 +33,6 @@ public class Employee {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(length = 100)
-    private String department;
-
     @Column(length = 20)
     private String phone;
 
@@ -42,17 +44,25 @@ public class Employee {
     @Column(nullable = false, unique = true, length = 50)
     private String employeeCode;
 
+    // One-to-One relationship with Address
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "address_id", unique = true)
+    private Address address;
+
+    // Many-to-One relationship with Department
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     // Required by JPA
     protected Employee() {
     }
 
-    // Constructor to preserve existing code compatibility
     public Employee(
             Long id,
             String firstName,
             String lastName,
             String email,
-            String department,
             String phone,
             LocalDate joiningDate,
             BigDecimal salary,
@@ -62,14 +72,13 @@ public class Employee {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.department = department;
         this.phone = phone;
         this.joiningDate = joiningDate;
         this.salary = salary;
         this.employeeCode = employeeCode;
     }
 
-    // JavaBean getters
+    // Getters
     public Long getId() {
         return id;
     }
@@ -84,10 +93,6 @@ public class Employee {
 
     public String getEmail() {
         return email;
-    }
-
-    public String getDepartment() {
-        return department;
     }
 
     public String getPhone() {
@@ -106,7 +111,15 @@ public class Employee {
         return employeeCode;
     }
 
-    // Record-style accessors for existing code
+    public Address getAddress() {
+        return address;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    // Record-style accessors
     public Long id() {
         return id;
     }
@@ -123,10 +136,6 @@ public class Employee {
         return email;
     }
 
-    public String department() {
-        return department;
-    }
-
     public String phone() {
         return phone;
     }
@@ -141,6 +150,14 @@ public class Employee {
 
     public String employeeCode() {
         return employeeCode;
+    }
+
+    public Address address() {
+        return address;
+    }
+
+    public Department department() {
+        return department;
     }
 
     // Setters
@@ -160,10 +177,6 @@ public class Employee {
         this.email = email;
     }
 
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
     public void setPhone(String phone) {
         this.phone = phone;
     }
@@ -178,5 +191,13 @@ public class Employee {
 
     public void setEmployeeCode(String employeeCode) {
         this.employeeCode = employeeCode;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 }

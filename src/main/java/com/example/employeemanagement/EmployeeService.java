@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Locale;
 
 @Service
 public class EmployeeService {
@@ -28,12 +27,16 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
+    private final DepartmentRepository departmentRepository;
 
     public EmployeeService(
             EmployeeRepository employeeRepository,
-            EmployeeMapper employeeMapper) {
+            EmployeeMapper employeeMapper,
+            DepartmentRepository departmentRepository) {
+
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
+        this.departmentRepository = departmentRepository;
     }
 
     public String getMessage() {
@@ -49,10 +52,9 @@ public class EmployeeService {
     }
 
     // Get all employees using database pagination
+    @Transactional(readOnly = true)
     public PageResponse<EmployeeResponse> getAllEmployees(
-            int page,
-            int size,
-            String sort) {
+            int page, int size, String sort) {
 
         Pageable pageable = createPageable(page, size, sort);
 
@@ -75,9 +77,7 @@ public class EmployeeService {
 
     // Create pagination settings
     private Pageable createPageable(
-            int page,
-            int size,
-            String sort) {
+            int page, int size, String sort) {
 
         if (page < 0) {
             throw new IllegalArgumentException(
@@ -108,14 +108,26 @@ public class EmployeeService {
         }
 
         return PageRequest.of(
-                page,
-                size,
-                Sort.by(direction, "lastName")
-        );
+                page, size,
+                Sort.by(direction, "lastName"));
+    }
+
+    // Find department using its name
+    private Department findDepartment(String name) {
+
+        if (name == null || name.isBlank()) {
+            return null;
+        }
+
+        return departmentRepository.findByNameIgnoreCase(name.trim())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Department not found: " + name));
     }
 
     // Get employee by ID
+    @Transactional(readOnly = true)
     public EmployeeResponse getEmployeeById(Long id) {
+
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(
                         "Employee not found with ID: " + id));
@@ -123,21 +135,22 @@ public class EmployeeService {
         return employeeMapper.toResponse(employee);
     }
 
-    // Get employees by department
+    // Get employees by department name
+    @Transactional(readOnly = true)
     public List<EmployeeResponse> getEmployeesByDepartment(
             String department) {
 
         return employeeRepository
-                .findByDepartmentIgnoreCase(department)
+                .findByDepartment_NameIgnoreCase(department)
                 .stream()
                 .map(employeeMapper::toResponse)
                 .toList();
     }
 
-    // Search employees by first name or last name with pagination
+    // Search employees by first name or last name
+    @Transactional(readOnly = true)
     public PageResponse<EmployeeResponse> searchEmployeesByName(
-            String name,
-            Pageable pageable) {
+            String name, Pageable pageable) {
 
         String searchName = name == null ? "" : name.trim();
 
@@ -148,10 +161,7 @@ public class EmployeeService {
         } else {
             employeePage = employeeRepository
                     .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-                            searchName,
-                            searchName,
-                            pageable
-                    );
+                            searchName, searchName, pageable);
         }
 
         List<EmployeeResponse> content = employeePage.getContent()
@@ -184,12 +194,15 @@ public class EmployeeService {
         }
 
         if (employeeRepository.existsByEmployeeCodeIgnoreCase(
-        request.employeeCode())) {
-    throw new DuplicateEmployeeCodeException(
-            "Employee code already exists");
-    }
+                request.employeeCode())) {
+            throw new DuplicateEmployeeCodeException(
+                    "Employee code already exists");
+        }
 
         Employee employee = employeeMapper.toEntity(request, null);
+
+        employee.setDepartment(findDepartment(request.department()));
+
         Employee saved = employeeRepository.save(employee);
 
         logger.info(
@@ -202,8 +215,7 @@ public class EmployeeService {
     // Update employee
     @Transactional
     public EmployeeResponse updateEmployee(
-            Long id,
-            UpdateEmployeeRequest request) {
+            Long id, UpdateEmployeeRequest request) {
 
         Employee existing = employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(
@@ -220,7 +232,8 @@ public class EmployeeService {
                 request.employeeCode())
                 && employeeRepository.existsByEmployeeCodeIgnoreCase(
                         request.employeeCode())) {
-            throw new DuplicateEmployeeCodeException("Employee code already exists");
+            throw new DuplicateEmployeeCodeException(
+                    "Employee code already exists");
         }
 
         Employee updated = new Employee(
@@ -228,18 +241,54 @@ public class EmployeeService {
                 request.firstName(),
                 request.lastName(),
                 request.email(),
-                request.department(),
                 request.phone(),
                 request.joiningDate(),
                 request.salary(),
                 request.employeeCode()
         );
 
+        // Preserve existing department if request has no department
+        if (request.department() == null
+                || request.department().isBlank()) {
+            updated.setDepartment(existing.department());
+        } else {
+            updated.setDepartment(
+                    findDepartment(request.department()));
+        }
+
+        // Preserve existing address during employee update
+        updated.setAddress(existing.address());
+
         Employee saved = employeeRepository.save(updated);
 
         logger.info(
                 "Employee updated successfully with ID: {}",
                 id);
+
+        return employeeMapper.toResponse(saved);
+    }
+
+    // Assign employee to a department
+    @Transactional
+    public EmployeeResponse assignDepartment(
+            Long employeeId, Long departmentId) {
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EmployeeNotFoundException(
+                        "Employee not found with ID: " + employeeId));
+
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Department not found with ID: " + departmentId));
+
+        employee.setDepartment(department);
+
+        Employee saved = employeeRepository.save(employee);
+
+        logger.info(
+                "Department {} assigned to employee {}",
+                departmentId,
+                employeeId);
 
         return employeeMapper.toResponse(saved);
     }

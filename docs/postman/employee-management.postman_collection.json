@@ -8,37 +8,433 @@
   },
   "item": [
     {
-      "name": "Test Invalid Employee Id",
-      "event": [
+      "name": "Error Cases",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Invalid employee returns 404\", function () {\r\n    pm.expect(pm.response.code).to.eql(404);\r\n});"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8080/api/v1/employees/99",
-          "protocol": "http",
-          "host": [
-            "localhost"
+          "name": "Employee Not Found",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"email\": \"testuser@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543215\",\r\n  \"joiningDate\": \"2025-09-01\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1238\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees/999",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees",
+                "999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Invalid Employee Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Invalid employee returns 404\", function () {\r\n    pm.expect(pm.response.code).to.eql(404);\r\n});"
+                ]
+              }
+            }
           ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "employees",
-            "99"
-          ]
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees/99",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees",
+                "99"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH - Employee Not Found (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"email\": \"patchuser@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543215\",\r\n  \"joiningDate\": \"2025-09-01\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1238\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees/999",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees",
+                "999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE - Employee Not Found (404)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees/999",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees",
+                "999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Phone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Error response has the required fields\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data).to.have.property(\"timestamp\");\r\n    pm.expect(data).to.have.property(\"status\", 400);\r\n    pm.expect(data).to.have.property(\"error\", \"Bad Request\");\r\n    pm.expect(data).to.have.property(\"message\");\r\n    pm.expect(data).to.have.property(\"path\");\r\n    pm.expect(data).to.have.property(\"fieldErrors\");\r\n});\r\n\r\npm.test(\"Phone validation error is reported\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.fieldErrors).to.have.property(\"phone\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"email\": \"test.phone@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"123\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1238\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Missing Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Error response has the required fields\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data).to.have.property(\"timestamp\");\r\n    pm.expect(data).to.have.property(\"status\", 400);\r\n    pm.expect(data).to.have.property(\"error\", \"Bad Request\");\r\n    pm.expect(data).to.have.property(\"message\");\r\n    pm.expect(data).to.have.property(\"path\");\r\n    pm.expect(data).to.have.property(\"fieldErrors\");\r\n});\r\n\r\npm.test(\"Missing email validation is reported\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.fieldErrors).to.have.property(\"email\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543215\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1239\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Duplicate Email 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409 Conflict\", function () {\r\n    pm.response.to.have.status(409);\r\n});\r\n\r\npm.test(\"Error response has the required fields\", function () {\r\n    const jsonData = pm.response.json();\r\n\r\n    pm.expect(jsonData).to.have.property(\"timestamp\");\r\n    pm.expect(jsonData).to.have.property(\"status\", 409);\r\n    pm.expect(jsonData).to.have.property(\"error\", \"Conflict\");\r\n    pm.expect(jsonData).to.have.property(\"message\");\r\n    pm.expect(jsonData).to.have.property(\"path\");\r\n    pm.expect(jsonData).to.have.property(\"fieldErrors\");\r\n});\r\n\r\npm.test(\"Duplicate email message is correct\", function () {\r\n    const jsonData = pm.response.json();\r\n    pm.expect(jsonData.message).to.include(\"Email already exists\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"email\": \"arun@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543215\",\r\n  \"joiningDate\": \"2025-09-01\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1238\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Employee Management System\",\r\n    \"startDate\": \"2026-11-05\",\r\n    \"endDate\": \"2027-03-31\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/projects",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Project to Employee",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees/1/projects/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees",
+                "1",
+                "projects",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Employees by Project",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/projects/1/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "1",
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Employees by Project Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees/project?projectName=Employee%20Management%20System",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees",
+                "project"
+              ],
+              "query": [
+                {
+                  "key": "projectName",
+                  "value": "Employee%20Management%20System"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Top 5 Departments by Employee Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/departments/top-5-by-employee-count",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                "top-5-by-employee-count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unassign project from employee",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees/1/projects/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees",
+                "1",
+                "projects",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "final demo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/employees/project?projectName=Employee%20Management%20System",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "employees",
+                "project"
+              ],
+              "query": [
+                {
+                  "key": "projectName",
+                  "value": "Employee%20Management%20System"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
       "name": "Get All Employees",
@@ -48,7 +444,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"First page returns employees\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\");\r\n    pm.expect(data.length).to.be.above(0);\r\n});"
+              ""
             ]
           }
         }
@@ -56,8 +452,17 @@
       "request": {
         "method": "GET",
         "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"firstName\": \"Karthik\",\r\n    \"lastName\": \"Raj\",\r\n    \"email\": \"karthik.raj104@example.com\",\r\n    \"department\": \"IT\",\r\n    \"phone\": \"9876543213\",\r\n    \"joiningDate\": \"2025-12-01\",\r\n    \"salary\": 32000,\r\n    \"employeeCode\": \"EMP-9111\",\r\n    \"address\": {\r\n        \"street\": \"45 Avinashi Road\",\r\n        \"city\": \"Coimbatore\",\r\n        \"state\": \"Tamil Nadu\",\r\n        \"country\": \"India\",\r\n        \"postalCode\": \"641004\"\r\n    }\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
         "url": {
-          "raw": "http://localhost:8080/api/v1/employees?page=0&size=10&sort=lastName,asc",
+          "raw": "http://localhost:8080/api/v1/employees",
           "protocol": "http",
           "host": [
             "localhost"
@@ -67,20 +472,6 @@
             "api",
             "v1",
             "employees"
-          ],
-          "query": [
-            {
-              "key": "page",
-              "value": "0"
-            },
-            {
-              "key": "size",
-              "value": "10"
-            },
-            {
-              "key": "sort",
-              "value": "lastName,asc"
-            }
           ]
         }
       },
@@ -94,7 +485,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"Out-of-range page returns empty array\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\").that.is.empty;\r\n});"
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is a PageResponse object\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data).to.be.an(\"object\");\r\n    pm.expect(data.content).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"Out-of-range page returns empty content\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data.content).to.be.an(\"array\").that.is.empty;\r\n    pm.expect(data.page).to.eql(100);\r\n});"
             ]
           }
         }
@@ -140,7 +531,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Employee has required fields\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.have.property(\"id\");\r\n    pm.expect(data).to.have.property(\"firstName\");\r\n    pm.expect(data).to.have.property(\"lastName\");\r\n    pm.expect(data).to.have.property(\"email\");\r\n});"
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Employee details are returned\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data).to.be.an(\"object\");\r\n    pm.expect(data).to.have.property(\"id\", 1);\r\n    pm.expect(data).to.have.property(\"firstName\");\r\n    pm.expect(data).to.have.property(\"email\");\r\n});"
             ]
           }
         }
@@ -149,7 +540,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8080/api/v1/employees/1",
+          "raw": "http://localhost:8080/api/v1/employees/3",
           "protocol": "http",
           "host": [
             "localhost"
@@ -159,7 +550,37 @@
             "api",
             "v1",
             "employees",
-            "1"
+            "3"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid Code 2",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"Code\",\r\n  \"email\": \"test.invalidcode2@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543221\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1200\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
           ]
         }
       },
@@ -251,7 +672,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"Search returns matching employee\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data.length).to.be.above(0);\r\n    data.forEach(function (employee) {\r\n        pm.expect(\r\n            (employee.firstName + \" \" + employee.lastName).toLowerCase()\r\n        ).to.include(\"gop\");\r\n    });\r\n});"
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is a PageResponse object\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data).to.be.an(\"object\");\r\n    pm.expect(data.content).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"Search returns matching employee\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data.content.length).to.be.above(0);\r\n\r\n    data.content.forEach(function (employee) {\r\n        pm.expect(\r\n            (employee.firstName + \" \" + employee.lastName).toLowerCase()\r\n        ).to.include(\"gop\");\r\n    });\r\n});"
             ]
           }
         }
@@ -300,48 +721,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"id\": 4,\r\n  \"firstName\": \"kavya\",\r\n  \"lastName\": \"R\",\r\n  \"email\": \"kaviya2@example.com\",\r\n  \"department\": \"IT\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://localhost:8080/api/v1/employees",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "employees"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create Employee Copy",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Duplicate email returns 409 Conflict\", function () {\r\n    pm.response.to.have.status(409);\r\n});"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"id\": 4,\r\n  \"firstName\": \"kavya\",\r\n  \"lastName\": \"R\",\r\n  \"email\": \"kaviya2@example.com\",\r\n  \"department\": \"IT\"\r\n}",
+          "raw": "{\r\n    \"firstName\": \"Karthik\",\r\n    \"lastName\": \"Raj\",\r\n    \"email\": \"karthik.raj104@example.com\",\r\n    \"department\": \"IT\",\r\n    \"phone\": \"9876543213\",\r\n    \"joiningDate\": \"2025-12-01\",\r\n    \"salary\": 32000,\r\n    \"employeeCode\": \"EMP-9111\",\r\n    \"address\": {\r\n        \"street\": \"45 Avinashi Road\",\r\n        \"city\": \"Coimbatore\",\r\n        \"state\": \"Tamil Nadu\",\r\n        \"country\": \"India\",\r\n        \"postalCode\": \"641004\"\r\n    }\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -382,7 +762,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"id\": 6,\r\n  \"firstName\": \"Meena\",\r\n  \"lastName\": \"R\",\r\n  \"email\": \"divya@example.com\",\r\n  \"department\": \"IT\"\r\n}",
+          "raw": "{\r\n  \"firstName\": \"Meena\",\r\n  \"lastName\": \"R\",\r\n  \"email\": \"meena.fresh101@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543211\",\r\n  \"joiningDate\": \"2025-09-01\",\r\n  \"salary\": 28000,\r\n  \"employeeCode\": \"EMP-9102\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -413,17 +793,17 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Employee updated successfully\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Updated employee has an email\", function () {\r\n    const data = pm.response.json();\r\n    pm.expect(data).to.have.property(\"email\");\r\n});"
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Updated employee details are correct\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data).to.be.an(\"object\");\r\n    pm.expect(data.id).to.eql(26);\r\n    pm.expect(data.firstName).to.eql(\"TestUpdated\");\r\n    pm.expect(data.lastName).to.eql(\"Employee\");\r\n    pm.expect(data.email).to.eql(\"fresh.test101@example.com\");\r\n    pm.expect(data.department).to.eql(\"IT\");\r\n    pm.expect(data.salary).to.eql(30000);\r\n});"
             ]
           }
         }
       ],
       "request": {
-        "method": "PATCH",
+        "method": "PUT",
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"department\": \"Finance\"\r\n}",
+          "raw": "{\r\n    \"firstName\": \"TestUpdated\",\r\n    \"lastName\": \"Employee\",\r\n    \"email\": \"fresh.test101@example.com\",\r\n    \"department\": \"IT\",\r\n    \"phone\": \"9876543210\",\r\n    \"joiningDate\": \"2025-09-01\",\r\n    \"salary\": 30000,\r\n    \"employeeCode\": \"EMP-9101\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -431,7 +811,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8080/api/v1/employees/4",
+          "raw": "http://localhost:8080/api/v1/employees/1",
           "protocol": "http",
           "host": [
             "localhost"
@@ -441,7 +821,7 @@
             "api",
             "v1",
             "employees",
-            "4"
+            "1"
           ]
         }
       },
@@ -498,7 +878,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"firstName\": \"Gopika\",\r\n  \"lastName\": \"S\",\r\n  \"email\": \"gopika@example.com\",\r\n  \"department\": \"IT\"\r\n}",
+          "raw": "{\r\n  \"firstName\": \"Gopika\",\r\n  \"lastName\": \"S\",\r\n  \"email\": \"gopika@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543210\",\r\n  \"joiningDate\": \"2025-06-01\",\r\n  \"salary\": 30000,\r\n  \"employeeCode\": \"EMP-1234\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -506,7 +886,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8080/api/v1/employees/1",
+          "raw": "http://localhost:8080/api/v1/employees/2",
           "protocol": "http",
           "host": [
             "localhost"
@@ -516,7 +896,7 @@
             "api",
             "v1",
             "employees",
-            "1"
+            "2"
           ]
         }
       },
@@ -530,7 +910,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Delete employee returns 204 No Content\", function () {\r\n    pm.response.to.have.status(204);\r\n});\r\n\r\npm.test(\"Delete response has no body\", function () {\r\n    pm.expect(pm.response.text()).to.equal(\"\");\r\n});"
+              "pm.test(\"Status code is 204\", function () {\r\n    pm.response.to.have.status(204);\r\n});\r\n\r\npm.test(\"Delete response has no body\", function () {\r\n    pm.expect(pm.response.text()).to.eql(\"\");\r\n});"
             ]
           }
         }
@@ -539,7 +919,7 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "http://localhost:8080/api/v1/employees/5",
+          "raw": "http://localhost:8080/api/v1/employees/26",
           "protocol": "http",
           "host": [
             "localhost"
@@ -549,7 +929,7 @@
             "api",
             "v1",
             "employees",
-            "5"
+            "26"
           ]
         }
       },
@@ -593,66 +973,6 @@
         "body": {
           "mode": "raw",
           "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"email\": \"test.invalidcode@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543214\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"ABC-1234\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://localhost:8080/api/v1/employees",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "employees"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Invalid Phone",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"email\": \"test.phone@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"123\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1238\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://localhost:8080/api/v1/employees",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "employees"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Missing Email",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543215\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1239\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -826,36 +1146,6 @@
       "response": []
     },
     {
-      "name": "Invalid Code 2",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"Code\",\r\n  \"email\": \"test.invalidcode2@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543221\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-12AB\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://localhost:8080/api/v1/employees",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "v1",
-            "employees"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "Invalid Code 3",
       "request": {
         "method": "POST",
@@ -933,6 +1223,1128 @@
             "v1",
             "employees",
             "3"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Employee Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Duplicate email returns 409 Conflict\", function () {\r\n    pm.response.to.have.status(409);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Test\",\r\n  \"lastName\": \"User\",\r\n  \"email\": \"arun@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543215\",\r\n  \"joiningDate\": \"2025-09-01\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1238\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid size",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees?page=0&size=0",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid page number",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees?page=-1&size=10",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "-1"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Size above 100",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees?page=0&size=101",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "101"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "First page",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees?page=0&size=10&sort=lastName,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Second page",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees?page=1&size=10&sort=lastName,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Descending sort",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees?page=0&size=10&sort=lastName,desc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,desc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/search?name=Gopika",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "Gopika"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Department Filter",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/search?name=Gopika&department=IT",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "Gopika"
+            },
+            {
+              "key": "department",
+              "value": "IT"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Employees",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Employee - Logging Test",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Arun\",\r\n  \"lastName\": \"Kumar\",\r\n  \"email\": \"arun.new@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543210\",\r\n  \"joiningDate\": \"2026-10-27\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1234\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Employee - Logging Test",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Arun\",\r\n  \"lastName\": \"Kumar\",\r\n  \"email\": \"arun.updated@example.com\",\r\n  \"department\": \"HR\",\r\n  \"phone\": \"9876543210\",\r\n  \"joiningDate\": \"2026-10-27\",\r\n  \"salary\": 30000,\r\n  \"employeeCode\": \"EMP-1234\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/5",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "5"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Employee - Logging Test",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/4",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "4"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Day 9 - Create Employee",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Gopika\",\r\n  \"lastName\": \"S\",\r\n  \"email\": \"gopika@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543210\",\r\n  \"joiningDate\": \"2025-06-01\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1234\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "Day 9 - Create Employee",
+          "host": [
+            "Day 9 - Create Employee"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Day 9 - Get Employee by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Day 9 - Get All Employees",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Day 9 - Update Employee",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Updated employee has correct details\", function () {\r\n    const data = pm.response.json();\r\n\r\n    pm.expect(data).to.be.an(\"object\");\r\n    pm.expect(data).to.have.property(\"id\", 1);\r\n    pm.expect(data.firstName).to.eql(\"Gopika\");\r\n    pm.expect(data.lastName).to.eql(\"S\");\r\n    pm.expect(data.department).to.eql(\"IT\");\r\n    pm.expect(data.email).to.eql(\"gopika@example.com\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Gopika\",\r\n  \"lastName\": \"S\",\r\n  \"email\": \"gopika@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543210\",\r\n  \"joiningDate\": \"2025-06-01\",\r\n  \"salary\": 30000,\r\n  \"employeeCode\": \"EMP-1234\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Day 9 - Delete Employee",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Meena\",\r\n  \"lastName\": \"K\",\r\n  \"email\": \"meena.day6@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543213\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1237\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Employees - Pagination",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees?page=0&size=10",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employee by Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/search?name=Gopika&page=0&size=5&sort=lastName,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "Gopika"
+            },
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "5"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employees by Department",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/search?department=IT&page=0&size=5&sort=lastName,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "department",
+              "value": "IT"
+            },
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "5"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employees by Department - Case Insensitive",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/search?department=it&page=0&size=5&sort=lastName,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "department",
+              "value": "it"
+            },
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "5"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employee by Last Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/search?name=S&page=0&size=5&sort=lastName,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "S"
+            },
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "5"
+            },
+            {
+              "key": "sort",
+              "value": "lastName,asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Department",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"IT\",\r\n    \"location\": \"Coimbatore\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET All Departments",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Department by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employees by Department",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments/1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments",
+            "1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employees by Department ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments/1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments",
+            "1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Assign Department to Employee ",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/1/department/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "1",
+            "department",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Day 11 - Get All Employees",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Departments",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employees by Department",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Meena\",\r\n  \"lastName\": \"K\",\r\n  \"email\": \"meena.day6@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543213\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1237\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments/1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments",
+            "1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Department",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"HR\",\r\n    \"location\": \"Chennai\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Department by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Meena\",\r\n  \"lastName\": \"K\",\r\n  \"email\": \"meena.day6@example.com\",\r\n  \"department\": \"IT\",\r\n  \"phone\": \"9876543213\",\r\n  \"joiningDate\": \"2025-06-15\",\r\n  \"salary\": 25000,\r\n  \"employeeCode\": \"EMP-1237\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "salaries",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Divya\",\r\n    \"range\": \"35000-40000\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/salaries",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "salaries"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employee by Id - day12",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employees day 12",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employee by department day 12",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/departments",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "departments"
           ]
         }
       },

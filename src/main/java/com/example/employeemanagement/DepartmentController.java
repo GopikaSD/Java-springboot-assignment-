@@ -1,4 +1,3 @@
-
 package com.example.employeemanagement;
 
 import java.util.List;
@@ -11,58 +10,61 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/departments")
 public class DepartmentController {
 
-    private final DepartmentRepository departmentRepository;
-    private final EmployeeRepository employeeRepository;
+    private final DepartmentService departmentService;
 
-    public DepartmentController(
-            DepartmentRepository departmentRepository,
-            EmployeeRepository employeeRepository) {
-        this.departmentRepository = departmentRepository;
-        this.employeeRepository = employeeRepository;
+    public DepartmentController(DepartmentService departmentService) {
+        this.departmentService = departmentService;
     }
 
     // Create Department
     @PostMapping
-    public ResponseEntity<Department> createDepartment(
-            @RequestBody Department department) {
+    public ResponseEntity<DepartmentResponse> createDepartment(
+            @RequestBody DepartmentRequest request) {
 
-        Department savedDepartment =
-                departmentRepository.save(department);
+        DepartmentResponse response =
+                departmentService.createDepartment(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(savedDepartment);
+                .body(response);
     }
 
     // Get All Departments
     @GetMapping
-    public ResponseEntity<List<Department>> getAllDepartments() {
+    public ResponseEntity<List<DepartmentResponse>> getAllDepartments() {
+
         return ResponseEntity.ok(
-                departmentRepository.findAll());
+                departmentService.getAllDepartments()
+        );
     }
 
     // Get Department by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Department> getDepartmentById(
+    public ResponseEntity<DepartmentResponse> getDepartmentById(
             @PathVariable Long id) {
 
-        return departmentRepository.findById(id)
+        return departmentService.getDepartmentById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     // Get Employees by Department
     @GetMapping("/{id}/employees")
-    public ResponseEntity<List<Employee>> getEmployeesByDepartment(
+    public ResponseEntity<List<EmployeeResponse>> getEmployeesByDepartment(
             @PathVariable Long id) {
 
-        if (!departmentRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
+        return departmentService.getEmployeesByDepartment(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-        List<Employee> employees =
-                employeeRepository.findByDepartment_Id(id);
+    // Get Top 5 Departments by Employee Count
+    @GetMapping("/top-5-by-employee-count")
+    public ResponseEntity<List<DepartmentEmployeeCountProjection>>
+            getTop5DepartmentsByEmployeeCount() {
 
-        return ResponseEntity.ok(employees);
+        return ResponseEntity.ok(
+                departmentService.getTop5DepartmentsByEmployeeCount()
+        );
     }
 }

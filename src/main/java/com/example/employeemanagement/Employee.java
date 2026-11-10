@@ -3,6 +3,10 @@ package com.example.employeemanagement;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -12,6 +16,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -52,7 +58,17 @@ public class Employee {
     // Many-to-One relationship with Department
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
+    @JsonIgnoreProperties({"employees", "hibernateLazyInitializer", "handler"})
     private Department department;
+
+    // Many-to-Many relationship with Project
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "employee_projects",
+            joinColumns = @JoinColumn(name = "employee_id"),
+            inverseJoinColumns = @JoinColumn(name = "project_id")
+    )
+    private Set<Project> projects = new HashSet<>();
 
     // Required by JPA
     protected Employee() {
@@ -117,6 +133,10 @@ public class Employee {
 
     public Department getDepartment() {
         return department;
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
     }
 
     // Record-style accessors
@@ -199,5 +219,9 @@ public class Employee {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
     }
 }

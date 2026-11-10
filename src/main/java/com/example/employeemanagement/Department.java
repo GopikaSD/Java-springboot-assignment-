@@ -1,7 +1,6 @@
 
 package com.example.employeemanagement;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
@@ -21,8 +20,10 @@ public class Department {
 
     private String location;
 
-    @OneToMany(mappedBy = "department")
-    @JsonIgnore
+    @OneToMany(
+            mappedBy = "department",
+            fetch = FetchType.LAZY
+    )
     private List<Employee> employees = new ArrayList<>();
 
     // Default constructor

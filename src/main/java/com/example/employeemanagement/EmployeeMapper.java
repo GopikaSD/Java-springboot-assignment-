@@ -20,6 +20,7 @@ public interface EmployeeMapper {
     @Mapping(target = "id", source = "id")
     @Mapping(target = "address", source = "request.address")
     @Mapping(target = "department", ignore = true)
+    @Mapping(target = "projects", ignore = true)
     Employee toEntity(EmployeeRequest request, Long id);
 
     default Address toEntity(AddressRequest request) {

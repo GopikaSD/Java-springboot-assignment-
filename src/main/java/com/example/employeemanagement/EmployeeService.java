@@ -293,6 +293,18 @@ public class EmployeeService {
         return employeeMapper.toResponse(saved);
     }
 
+    // Get employees by project name using JPQL query
+    @Transactional(readOnly = true)
+    public List<EmployeeResponse> getEmployeesByProjectName(
+            String projectName) {
+
+        return employeeRepository
+                .findEmployeesByProjectName(projectName)
+                .stream()
+                .map(employeeMapper::toResponse)
+                .toList();
+    }
+
     // Delete employee
     @Transactional
     public boolean deleteEmployee(Long id) {

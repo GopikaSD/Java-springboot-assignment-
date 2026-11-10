@@ -4,6 +4,8 @@ package com.example.employeemanagement;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -59,5 +61,16 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             String firstName,
             String lastName,
             Pageable pageable
+    );
+
+    // Find employees by project name using JPQL
+    @Query("""
+           SELECT DISTINCT e
+           FROM Employee e
+           JOIN e.projects p
+           WHERE LOWER(p.name) = LOWER(:projectName)
+           """)
+    List<Employee> findEmployeesByProjectName(
+            @Param("projectName") String projectName
     );
 }

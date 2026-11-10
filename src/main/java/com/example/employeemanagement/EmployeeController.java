@@ -177,6 +177,15 @@ public class EmployeeController {
         return employeeService.getEmployeesByDepartment(department);
     }
 
+    // Get employees by project name using JPQL query
+    @GetMapping("/project")
+    public ResponseEntity<List<EmployeeResponse>> getEmployeesByProjectName(
+            @RequestParam String projectName) {
+
+        return ResponseEntity.ok(
+                employeeService.getEmployeesByProjectName(projectName));
+    }
+
     @PostMapping
     public ResponseEntity<EmployeeResponse> createEmployee(
             @Valid @RequestBody EmployeeRequest request) {
